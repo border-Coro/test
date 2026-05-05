@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple Timer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #1a1a2e;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .timer-card {
+      background: #16213e;
+      border-radius: 24px;
+      padding: 48px 64px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    h1 {
+      color: #a8b2d8;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .display {
+      font-size: 80px;
+      font-weight: 200;
+      color: #e2e8f0;
+      letter-spacing: 4px;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 40px;
+    }
+
+    .display .ms {
+      font-size: 36px;
+      color: #64748b;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    button {
+      padding: 14px 36px;
+      border: none;
+      border-radius: 50px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      letter-spacing: 0.5px;
+    }
+
+    #startStop {
+      background: #6366f1;
+      color: #fff;
+      min-width: 120px;
+    }
+
+    #startStop:hover {
+      background: #4f46e5;
+      transform: translateY(-1px);
+    }
+
+    #startStop.running {
+      background: #ef4444;
+    }
+
+    #startStop.running:hover {
+      background: #dc2626;
+    }
+
+    #reset {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+    }
+
+    #reset:hover {
+      background: #273549;
+      color: #cbd5e1;
+    }
+
+    #lap {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+    }
+
+    #lap:hover {
+      background: #273549;
+      color: #cbd5e1;
+    }
+
+    .laps {
+      margin-top: 32px;
+      max-height: 200px;
+      overflow-y: auto;
+      text-align: left;
+    }
+
+    .laps::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .laps::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .laps::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 2px;
+    }
+
+    .lap-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #1e293b;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .lap-item span:last-child {
+      color: #94a3b8;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+  <div class="timer-card">
+    <h1>Timer</h1>
+    <div class="display">
+      <span id="time">00:00</span><span class="ms">.<span id="ms">00</span></span>
+    </div>
+    <div class="buttons">
+      <button id="startStop">Start</button>
+      <button id="lap">Lap</button>
+      <button id="reset">Reset</button>
+    </div>
+    <div class="laps" id="laps"></div>
+  </div>
+
+  <script>
+    let startTime = 0;
+    let elapsed = 0;
+    let timerId = null;
+    let lapCount = 0;
+    let lapStart = 0;
+
+    const timeEl = document.getElementById('time');
+    const msEl = document.getElementById('ms');
+    const startStopBtn = document.getElementById('startStop');
+    const lapBtn = document.getElementById('lap');
+    const resetBtn = document.getElementById('reset');
+    const lapsEl = document.getElementById('laps');
+
+    function format(ms) {
+      const totalSec = Math.floor(ms / 1000);
+      const min = Math.floor(totalSec / 60).toString().padStart(2, '0');
+      const sec = (totalSec % 60).toString().padStart(2, '0');
+      const cent = Math.floor((ms % 1000) / 10).toString().padStart(2, '0');
+      return { min, sec, cent };
+    }
+
+    function tick() {
+      elapsed = Date.now() - startTime;
+      const { min, sec, cent } = format(elapsed);
+      timeEl.textContent = `${min}:${sec}`;
+      msEl.textContent = cent;
+    }
+
+    startStopBtn.addEventListener('click', () => {
+      if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+        startStopBtn.textContent = 'Start';
+        startStopBtn.classList.remove('running');
+      } else {
+        startTime = Date.now() - elapsed;
+        if (lapStart === 0) lapStart = startTime;
+        timerId = setInterval(tick, 10);
+        startStopBtn.textContent = 'Stop';
+        startStopBtn.classList.add('running');
+      }
+    });
+
+    lapBtn.addEventListener('click', () => {
+      if (!timerId) return;
+      lapCount++;
+      const lapTime = elapsed - (lapStart - (Date.now() - elapsed) + (Date.now() - elapsed));
+      const now = elapsed;
+      const lapElapsed = now - (lapCount === 1 ? 0 : lapPrev);
+      const { min, sec, cent } = format(lapElapsed);
+      lapPrev = now;
+
+      const item = document.createElement('div');
+      item.className = 'lap-item';
+      item.innerHTML = `<span>Lap ${lapCount}</span><span>${min}:${sec}.${cent}</span>`;
+      lapsEl.prepend(item);
+    });
+
+    let lapPrev = 0;
+
+    resetBtn.addEventListener('click', () => {
+      clearInterval(timerId);
+      timerId = null;
+      elapsed = 0;
+      lapCount = 0;
+      lapPrev = 0;
+      lapStart = 0;
+      timeEl.textContent = '00:00';
+      msEl.textContent = '00';
+      startStopBtn.textContent = 'Start';
+      startStopBtn.classList.remove('running');
+      lapsEl.innerHTML = '';
+    });
+  </script>
+</body>
+</html>
