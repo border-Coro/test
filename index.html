@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simple Timer</title>
+  <title>ランダムポケモン</title>
   <style>
     * {
       margin: 0;
@@ -12,226 +12,256 @@
     }
 
     body {
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      background: #1a1a2e;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 50%, #6bcb77 100%);
       font-family: 'Segoe UI', sans-serif;
     }
 
-    .timer-card {
-      background: #16213e;
+    .card {
+      background: #fff;
       border-radius: 24px;
-      padding: 48px 64px;
+      padding: 40px 48px;
       text-align: center;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    }
-
-    h1 {
-      color: #a8b2d8;
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      margin-bottom: 32px;
-    }
-
-    .display {
-      font-size: 80px;
-      font-weight: 200;
-      color: #e2e8f0;
-      letter-spacing: 4px;
-      font-variant-numeric: tabular-nums;
-      margin-bottom: 40px;
-    }
-
-    .display .ms {
-      font-size: 36px;
-      color: #64748b;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-    }
-
-    button {
-      padding: 14px 36px;
-      border: none;
-      border-radius: 50px;
-      font-size: 15px;
-      font-weight: 500;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+      width: 320px;
       cursor: pointer;
-      transition: all 0.15s ease;
-      letter-spacing: 0.5px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      user-select: none;
     }
 
-    #startStop {
-      background: #6366f1;
-      color: #fff;
-      min-width: 120px;
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 32px 72px rgba(0, 0, 0, 0.25);
     }
 
-    #startStop:hover {
-      background: #4f46e5;
+    .card:active {
       transform: translateY(-1px);
     }
 
-    #startStop.running {
-      background: #ef4444;
+    .hint {
+      font-size: 12px;
+      color: #aaa;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
     }
 
-    #startStop.running:hover {
-      background: #dc2626;
-    }
-
-    #reset {
-      background: #1e293b;
-      color: #94a3b8;
-      border: 1px solid #334155;
-    }
-
-    #reset:hover {
-      background: #273549;
-      color: #cbd5e1;
-    }
-
-    #lap {
-      background: #1e293b;
-      color: #94a3b8;
-      border: 1px solid #334155;
-    }
-
-    #lap:hover {
-      background: #273549;
-      color: #cbd5e1;
-    }
-
-    .laps {
-      margin-top: 32px;
-      max-height: 200px;
-      overflow-y: auto;
-      text-align: left;
-    }
-
-    .laps::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    .laps::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .laps::-webkit-scrollbar-thumb {
-      background: #334155;
-      border-radius: 2px;
-    }
-
-    .lap-item {
+    .sprite-wrap {
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 16px;
       display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid #1e293b;
-      color: #64748b;
-      font-size: 13px;
+      align-items: center;
+      justify-content: center;
+      position: relative;
     }
 
-    .lap-item span:last-child {
-      color: #94a3b8;
-      font-variant-numeric: tabular-nums;
+    .sprite-wrap img {
+      width: 160px;
+      height: 160px;
+      image-rendering: pixelated;
+      transition: opacity 0.2s ease;
     }
+
+    .spinner {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #eee;
+      border-top-color: #ff6b6b;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      position: absolute;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading .spinner { display: block; }
+    .loading img { opacity: 0; }
+
+    .number {
+      font-size: 13px;
+      color: #bbb;
+      margin-bottom: 4px;
+    }
+
+    .name {
+      font-size: 32px;
+      font-weight: 700;
+      color: #333;
+      text-transform: capitalize;
+      margin-bottom: 12px;
+    }
+
+    .types {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .type-badge {
+      padding: 4px 14px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      text-transform: capitalize;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stat {
+      background: #f8f8f8;
+      border-radius: 12px;
+      padding: 8px 4px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .btn {
+      margin-top: 24px;
+      background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 32px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: opacity 0.15s;
+      width: 100%;
+    }
+
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
-  <div class="timer-card">
-    <h1>Timer</h1>
-    <div class="display">
-      <span id="time">00:00</span><span class="ms">.<span id="ms">00</span></span>
-    </div>
-    <div class="buttons">
-      <button id="startStop">Start</button>
-      <button id="lap">Lap</button>
-      <button id="reset">Reset</button>
-    </div>
-    <div class="laps" id="laps"></div>
+
+<div class="card" id="card">
+  <div class="hint">クリックして次へ</div>
+  <div class="sprite-wrap" id="spriteWrap">
+    <div class="spinner"></div>
+    <img id="sprite" src="" alt="" />
   </div>
+  <div class="number" id="number">#000</div>
+  <div class="name" id="name">---</div>
+  <div class="types" id="types"></div>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">HP</div>
+      <div class="stat-value" id="hp">-</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">こうげき</div>
+      <div class="stat-value" id="atk">-</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">ぼうぎょ</div>
+      <div class="stat-value" id="def">-</div>
+    </div>
+  </div>
+  <button class="btn" id="btn">ランダムに表示</button>
+</div>
 
-  <script>
-    let startTime = 0;
-    let elapsed = 0;
-    let timerId = null;
-    let lapCount = 0;
-    let lapStart = 0;
+<script>
+  const TYPE_COLORS = {
+    normal: '#A8A878', fire: '#F08030', water: '#6890F0', electric: '#F8D030',
+    grass: '#78C850', ice: '#98D8D8', fighting: '#C03028', poison: '#A040A0',
+    ground: '#E0C068', flying: '#A890F0', psychic: '#F85888', bug: '#A8B820',
+    rock: '#B8A038', ghost: '#705898', dragon: '#7038F8', dark: '#705848',
+    steel: '#B8B8D0', fairy: '#EE99AC',
+  };
 
-    const timeEl = document.getElementById('time');
-    const msEl = document.getElementById('ms');
-    const startStopBtn = document.getElementById('startStop');
-    const lapBtn = document.getElementById('lap');
-    const resetBtn = document.getElementById('reset');
-    const lapsEl = document.getElementById('laps');
+  const TOTAL_POKEMON = 1010;
 
-    function format(ms) {
-      const totalSec = Math.floor(ms / 1000);
-      const min = Math.floor(totalSec / 60).toString().padStart(2, '0');
-      const sec = (totalSec % 60).toString().padStart(2, '0');
-      const cent = Math.floor((ms % 1000) / 10).toString().padStart(2, '0');
-      return { min, sec, cent };
+  const spriteWrap = document.getElementById('spriteWrap');
+  const spriteEl = document.getElementById('sprite');
+  const numberEl = document.getElementById('number');
+  const nameEl = document.getElementById('name');
+  const typesEl = document.getElementById('types');
+  const hpEl = document.getElementById('hp');
+  const atkEl = document.getElementById('atk');
+  const defEl = document.getElementById('def');
+  const btn = document.getElementById('btn');
+  const card = document.getElementById('card');
+
+  let loading = false;
+
+  async function fetchRandom() {
+    if (loading) return;
+    loading = true;
+    btn.disabled = true;
+    spriteWrap.classList.add('loading');
+
+    const id = Math.floor(Math.random() * TOTAL_POKEMON) + 1;
+    try {
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+      if (!res.ok) throw new Error('fetch failed');
+      const data = await res.json();
+
+      const spriteUrl =
+        data.sprites.other?.['official-artwork']?.front_default ||
+        data.sprites.front_default;
+
+      await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = spriteUrl;
+      });
+
+      spriteEl.src = spriteUrl;
+      spriteEl.alt = data.name;
+      numberEl.textContent = `#${String(data.id).padStart(3, '0')}`;
+      nameEl.textContent = data.name;
+
+      typesEl.innerHTML = data.types
+        .map(t => {
+          const color = TYPE_COLORS[t.type.name] || '#888';
+          return `<span class="type-badge" style="background:${color}">${t.type.name}</span>`;
+        })
+        .join('');
+
+      const stats = {};
+      data.stats.forEach(s => { stats[s.stat.name] = s.base_stat; });
+      hpEl.textContent = stats.hp ?? '-';
+      atkEl.textContent = stats.attack ?? '-';
+      defEl.textContent = stats.defense ?? '-';
+    } catch (e) {
+      nameEl.textContent = 'エラー';
+    } finally {
+      spriteWrap.classList.remove('loading');
+      loading = false;
+      btn.disabled = false;
     }
+  }
 
-    function tick() {
-      elapsed = Date.now() - startTime;
-      const { min, sec, cent } = format(elapsed);
-      timeEl.textContent = `${min}:${sec}`;
-      msEl.textContent = cent;
-    }
+  card.addEventListener('click', fetchRandom);
+  fetchRandom();
+</script>
 
-    startStopBtn.addEventListener('click', () => {
-      if (timerId) {
-        clearInterval(timerId);
-        timerId = null;
-        startStopBtn.textContent = 'Start';
-        startStopBtn.classList.remove('running');
-      } else {
-        startTime = Date.now() - elapsed;
-        if (lapStart === 0) lapStart = startTime;
-        timerId = setInterval(tick, 10);
-        startStopBtn.textContent = 'Stop';
-        startStopBtn.classList.add('running');
-      }
-    });
-
-    lapBtn.addEventListener('click', () => {
-      if (!timerId) return;
-      lapCount++;
-      const lapTime = elapsed - (lapStart - (Date.now() - elapsed) + (Date.now() - elapsed));
-      const now = elapsed;
-      const lapElapsed = now - (lapCount === 1 ? 0 : lapPrev);
-      const { min, sec, cent } = format(lapElapsed);
-      lapPrev = now;
-
-      const item = document.createElement('div');
-      item.className = 'lap-item';
-      item.innerHTML = `<span>Lap ${lapCount}</span><span>${min}:${sec}.${cent}</span>`;
-      lapsEl.prepend(item);
-    });
-
-    let lapPrev = 0;
-
-    resetBtn.addEventListener('click', () => {
-      clearInterval(timerId);
-      timerId = null;
-      elapsed = 0;
-      lapCount = 0;
-      lapPrev = 0;
-      lapStart = 0;
-      timeEl.textContent = '00:00';
-      msEl.textContent = '00';
-      startStopBtn.textContent = 'Start';
-      startStopBtn.classList.remove('running');
-      lapsEl.innerHTML = '';
-    });
-  </script>
 </body>
 </html>
